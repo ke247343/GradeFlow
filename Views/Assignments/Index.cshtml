@@ -1,0 +1,37 @@
+@model IEnumerable<GradeFlow.Models.Assignment>
+@{
+    ViewData["Title"] = "Assignments";
+    var course = ViewBag.Course as GradeFlow.Models.Course;
+}
+
+<h2>Assignments for @course?.Title (@course?.Code)</h2>
+
+<p>
+    <a asp-action="Create" asp-route-courseId="@course?.Id" class="btn btn-primary">Create New Assignment</a>
+    <a asp-controller="Courses" asp-action="Index" class="btn btn-secondary">Back to Courses</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Due Date</th>
+            <th>Max Points</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                <td>@item.DueDate.ToShortDateString()</td>
+                <td>@Html.DisplayFor(modelItem => item.MaxPoints)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

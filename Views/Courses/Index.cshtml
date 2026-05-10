@@ -1,0 +1,40 @@
+@model IEnumerable<GradeFlow.Models.Course>
+
+@{
+    ViewData["Title"] = "Courses";
+}
+
+<h2>Courses</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Course</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Code</th>
+            <th>Instructor</th>
+            <th>Term</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                <td>@Html.DisplayFor(modelItem => item.Code)</td>
+                <td>@item.Instructor?.Email}</td>
+                <td>@Html.DisplayFor(modelItem => item.Term)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
+                    <a asp-controller="Assignments" asp-action="Index" asp-route-courseId="@item.Id">Assignments</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

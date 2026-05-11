@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/edrin/Documents/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow/GradeFlow.csproj": {}
+    "/Users/edrin/Local/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow.csproj": {}
   },
   "projects": {
-    "/Users/edrin/Documents/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow/GradeFlow.csproj": {
+    "/Users/edrin/Local/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/edrin/Documents/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow/GradeFlow.csproj",
+        "projectUniqueName": "/Users/edrin/Local/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow.csproj",
         "projectName": "GradeFlow",
-        "projectPath": "/Users/edrin/Documents/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow/GradeFlow.csproj",
+        "projectPath": "/Users/edrin/Local/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow.csproj",
         "packagesPath": "/Users/edrin/.nuget/packages/",
-        "outputPath": "/Users/edrin/Documents/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow/obj/",
+        "outputPath": "/Users/edrin/Local/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/edrin/.nuget/NuGet/NuGet.Config"

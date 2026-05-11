@@ -1,0 +1,46 @@
+@model IEnumerable<GradeFlow.Models.Submission>
+@{
+    ViewData["Title"] = "My Grades";
+}
+
+<h2>My Grades</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">You haven't submitted any assignments yet.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Assignment</th>
+                <th>Submitted</th>
+                <th>Grade</th>
+                <th>Feedback</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sub in Model)
+            {
+                <tr>
+                    <td>@sub.Assignment?.Course?.Title (@sub.Assignment?.Course?.Code)</td>
+                    <td>@sub.Assignment?.Title</td>
+                    <td>@sub.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        @if (sub.Grade.HasValue)
+                        {
+                            <span class="badge bg-success">@sub.Grade / @sub.Assignment?.MaxPoints</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">Not graded</span>
+                        }
+                    </td>
+                    <td>@sub.Feedback</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

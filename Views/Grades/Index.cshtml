@@ -1,0 +1,40 @@
+@model IEnumerable<GradeFlow.Models.Submission>
+@{
+    ViewData["Title"] = "Submissions";
+    var assignment = ViewBag.Assignment as GradeFlow.Models.Assignment;
+}
+
+<h2>Submissions for @assignment?.Title</h2>
+<p><strong>Course:</strong> @assignment?.Course?.Title (@assignment?.Course?.Code)</p>
+<p><strong>Max Points:</strong> @assignment?.MaxPoints</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>Submitted At</th>
+            <th>Late</th>
+            <th>Grade</th>
+            <th>Feedback</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sub in Model)
+        {
+            <tr>
+                <td>@sub.Student?.Email</td>
+                <td>@sub.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(sub.IsLate ? "Yes" : "No")</td>
+                <td>@(sub.Grade.HasValue ? sub.Grade.ToString() : "Not graded")</td>
+                <td>@(sub.Feedback ?? "")</td>
+                <td>
+                    <a asp-action="Grade" asp-route-id="@sub.Id" class="btn btn-sm btn-primary">Grade</a>
+                    <a href="@sub.FilePath" target="_blank" class="btn btn-sm btn-secondary">Download</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Details" asp-controller="Assignments" asp-route-id="@assignment?.Id" class="btn btn-secondary">Back to Assignment</a>

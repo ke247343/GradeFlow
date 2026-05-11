@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GradeFlow")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97cbe49b0404c90d8c9f44abed7bc5c2c9633813")]
 [assembly: System.Reflection.AssemblyProductAttribute("GradeFlow")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GradeFlow")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

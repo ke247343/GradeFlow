@@ -1,0 +1,4 @@
+@if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
+{
+    <a asp-controller="Grades" asp-action="Index" asp-route-assignmentId="@Model.Id" class="btn btn-info">View Submissions</a>
+}

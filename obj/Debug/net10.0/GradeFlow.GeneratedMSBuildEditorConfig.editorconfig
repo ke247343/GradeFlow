@@ -19,81 +19,97 @@ build_property.TargetFrameworkIdentifier = .NETCoreApp
 build_property.TargetFrameworkVersion = v10.0
 build_property.RootNamespace = GradeFlow
 build_property.RootNamespace = GradeFlow
-build_property.ProjectDir = /Users/edrin/Documents/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow/
+build_property.ProjectDir = /Users/edrin/Local/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /Users/edrin/Documents/School/Sem_3/ASP.NET & C#/Projects/GradeFlow/GradeFlow
+build_property.MSBuildProjectDirectory = /Users/edrin/Local/School/Sem_3/ASP.NET & C#/Projects/GradeFlow
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Assignments/Create.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Assignments/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNzaWdubWVudHMvQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Assignments/Delete.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Assignments/Delete.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNzaWdubWVudHMvRGVsZXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Assignments/Edit.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Assignments/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNzaWdubWVudHMvRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Assignments/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNzaWdubWVudHMvRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Assignments/Index.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Assignments/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXNzaWdubWVudHMvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Courses/Create.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Courses/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ291cnNlcy9DcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Courses/Delete.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Courses/Delete.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ291cnNlcy9EZWxldGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Courses/Details.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Courses/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ291cnNlcy9EZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Courses/Edit.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Courses/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ291cnNlcy9FZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Courses/Index.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Courses/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ291cnNlcy9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Home/Index.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Grades/Grade.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvR3JhZGVzL0dyYWRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Grades/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvR3JhZGVzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Home/Privacy.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Home/MyGrades.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9NeUdyYWRlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Qcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Shared/Error.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL0Vycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Shared/_LoginPartial.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Shared/_LoginPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Mb2dpblBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Shared/_ValidationScriptsPartial.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/_ViewImports.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/_ViewStart.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/edrin/Documents/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/GradeFlow/Views/Shared/_Layout.cshtml]
+[/Users/edrin/Local/School/Sem_3/ASP.NET & C\#/Projects/GradeFlow/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-n4cb942lxr

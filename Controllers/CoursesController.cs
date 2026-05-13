@@ -45,7 +45,7 @@ namespace GradeFlow.Controllers
                 // Student sees only courses they are enrolled in
                 var courses = await _context.Courses
                     .Include(c => c.Instructor)
-                    .Where(c => c.Enrollments.Any(e => e.StudentId == userId))
+                    .Where(c => c.Enrollments!.Any(e => e.StudentId == userId))
                     .ToListAsync();
                 return View(courses);
             }

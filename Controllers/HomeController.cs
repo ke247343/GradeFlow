@@ -37,10 +37,12 @@ public class HomeController : Controller
     public async Task<IActionResult> MyGrades()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
+        if (userId == null){ 
+            return Challenge(); 
+            }
         var submissions = await _context.Submissions
             .Include(s => s.Assignment)
-                .ThenInclude(a => a.Course)
+                .ThenInclude(a => a!.Course)
             .Where(s => s.StudentId == userId)
             .OrderByDescending(s => s.SubmittedAt)
             .ToListAsync();

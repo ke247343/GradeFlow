@@ -4,23 +4,21 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello
-            @User.Identity?.Name!</a>
-        </li>
-        <li class="nav-item">
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout"
-                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-            </form>
-        </li>
-    }
+    <div class="dropdown">
+        <button class="btn btn-outline-primary dropdown-toggle rounded-pill px-3 py-1" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle me-1"></i> @User.Identity?.Name
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+            <li>
+                <form class="dropdown-item p-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="btn btn-link text-dark text-start w-100 px-3 py-2">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
 else
-    {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-        </li>
-    }
+{
+    <a class="btn btn-outline-primary rounded-pill px-3 py-1 me-2" asp-area="Identity" asp-page="/Account/Login">Login</a>
+    <a class="btn btn-primary rounded-pill px-3 py-1" asp-area="Identity" asp-page="/Account/Register">Register</a>
+}

@@ -4,52 +4,82 @@
     ViewData["Title"] = "Create Course";
 }
 
-<h2>Create Course</h2>
+<div class="container mt-4">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+            <h4 class="fw-bold mb-3">
+                <i class="bi bi-plus-circle text-primary"></i> Create New Course
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-<hr />
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="form-label fw-semibold">
+                                <i class="bi bi-type"></i> Title
+                            </label>
+                            <input asp-for="Title" class="form-control" placeholder="e.g., Introduction to Programming" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
+                        <div class="form-group mb-3">
+                            <label asp-for="Code" class="form-label fw-semibold">
+                                <i class="bi bi-upc-scan"></i> Course Code
+                            </label>
+                            <input asp-for="Code" class="form-control" placeholder="e.g., CS101" />
+                            <span asp-validation-for="Code" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-person-badge"></i> Instructor
+                            </label>
+                            <select name="InstructorEmail" class="form-select" asp-items="ViewBag.InstructorList">
+                                <option value="">-- Select Instructor --</option>
+                            </select>
+                            <small class="form-text text-muted">Select a registered user (must have Instructor or Admin role).</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="Term" class="form-label fw-semibold">
+                                <i class="bi bi-calendar"></i> Term
+                            </label>
+                            <input asp-for="Term" class="form-control" placeholder="e.g., Fall 2026" />
+                            <span asp-validation-for="Term" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="bi bi-check-lg"></i> Create Course
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary rounded-pill px-4">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6 d-none d-md-block">
+                    <div class="bg-light rounded-4 p-4 text-center">
+                        <i class="bi bi-journal-bookmark-fill" style="font-size: 6rem; color: var(--primary);"></i>
+                        <h5 class="mt-3">GradeFlow Course Creator</h5>
+                        <p class="text-muted small">Fill in the details to add a new course.</p>
+                    </div>
+                </div>
             </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Code" class="control-label"></label>
-                <input asp-for="Code" class="form-control" />
-                <span asp-validation-for="Code" class="text-danger"></span>
-            </div>
-
-            <!-- REPLACED: text input with dropdown -->
-            <div class="form-group mb-3">
-                <label class="control-label">Instructor</label>
-                <select name="InstructorEmail" class="form-control" asp-items="ViewBag.InstructorList">
-                    <option value="">-- Select Instructor --</option>
-                </select>
-                <small class="form-text text-muted">Select a registered user (must have Instructor or Admin
-                    role).</small>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label asp-for="Term" class="control-label"></label>
-                    <input asp-for="Term" class="form-control" placeholder="e.g., Fall 2026" />
-                    <span asp-validation-for="Term" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <input type="submit" value="Create" class="btn btn-primary" />
-                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-                </div>
-            </form>
+        </div>
+        <div class="card-footer bg-white border-top-0 pb-4 pt-0">
+            <small class="text-muted">
+                <i class="bi bi-info-circle"></i> All fields are required.
+            </small>
         </div>
     </div>
+</div>
 
-    @section Scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+}

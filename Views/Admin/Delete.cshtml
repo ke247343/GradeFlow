@@ -1,0 +1,49 @@
+@using Microsoft.AspNetCore.Identity
+@model IdentityUser
+@{
+    ViewData["Title"] = "Delete User";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0 rounded-4 border-danger">
+        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+            <h4 class="fw-bold mb-3 text-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i> Delete User
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-octagon-fill me-2 fs-4"></i>
+                <div>
+                    <strong>Warning!</strong> Are you sure you want to delete user <strong>@Model.Email</strong>?
+                    This action cannot be undone. All associated submissions, enrollments, and grades will be removed.
+                </div>
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Roles</dt>
+                <dd class="col-sm-9">@ViewBag.UserRoles</dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">
+                        <i class="bi bi-trash"></i> Confirm Delete
+                    </button>
+                    <a asp-action="Users" class="btn btn-secondary rounded-pill px-4">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer bg-white border-top-0 pb-4 pt-0">
+            <small class="text-muted">
+                <i class="bi bi-info-circle"></i> Deleting a user will also remove their submissions, enrollments, and any related data (due to database cascade).
+            </small>
+        </div>
+    </div>
+</div>

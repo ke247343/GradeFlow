@@ -15,12 +15,12 @@ namespace GradeFlow.Data
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<Submission> Submissions { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Configure relationships
             builder.Entity<Course>()
                 .HasOne(c => c.Instructor)
                 .WithMany()
@@ -53,7 +53,7 @@ namespace GradeFlow.Data
                 .HasForeignKey(a => a.CourseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // SOFT DELETE GLOBAL AUTOMATED INTERCEPTION FILTER ENGINE
+            // SOFT DELETE GLOBAL INTERCEPTION FILTERS
             builder.Entity<Course>().HasQueryFilter(c => c.DeletedAt == null);
             builder.Entity<Assignment>().HasQueryFilter(a => a.DeletedAt == null);
         }

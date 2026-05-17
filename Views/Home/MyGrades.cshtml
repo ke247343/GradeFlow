@@ -1,46 +1,335 @@
 @model IEnumerable<GradeFlow.Models.Submission>
+@inject GradeFlow.Data.ApplicationDbContext _context
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
 @{
-    ViewData["Title"] = "My Grades";
+    ViewData["Title"] = "My Grades Dashboard";
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var currentUtc = DateTime.UtcNow;
+
+    // Course Mapping Weight Configuration Matrix
+    var weightMap = new Dictionary<string, double>
+    {
+        { "CAT1",    0.20 },
+        { "CAT2",    0.20 },
+        { "Project", 0.20 },
+        { "Exam",    0.40 }
+    };
+
+    // Group the flat submissions array by active Course modules
+    var courseGroupings = Model
+        .Where(s => s.Assignment?.Course != null)
+        .GroupBy(s => s.Assignment!.CourseId)
+        .ToList();
+
+    // Identify unsubmitted tasks closing within a 48-Hour Threshold
+    var incomingUrgentRadarTasks = _context.Assignments
+        .Where(a => _context.Enrollments.Any(e => e.CourseId == a.CourseId && e.StudentId == userId))
+        .Where(a => currentUtc >= a.ReleaseDate && currentUtc <= a.CutOffDate)
+        .Where(a => !_context.Submissions.Any(s => s.AssignmentId == a.Id && s.StudentId == userId))
+        .Where(a => a.DueDate <= currentUtc.AddHours(48))
+        .Include(a => a.Course)
+        .OrderBy(a => a.DueDate)
+        .ToList();
 }
 
-<h2>My Grades</h2>
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1"><i class="bi bi-award-fill text-warning"></i> Student Academic Command Station</h2>
+    <p class="text-muted mb-0">Monitor weighted standings, run milestone simulation projections, and verify instructor critiques.</p>
+</div>
 
-@if (!Model.Any())
+<!-- Urgent Deadlines Radar Notification Ticker -->
+@if (incomingUrgentRadarTasks.Any())
 {
-    <div class="alert alert-info">You haven't submitted any assignments yet.</div>
+    <div class="alert alert-danger border-0 shadow-sm rounded-4 p-4 mb-4 d-flex gap-3 align-items-start animate-pulse">
+        <i class="bi bi-exclamation-octagon-fill text-danger display-6 leading-none"></i>
+        <div class="w-100">
+            <h5 class="fw-bold text-danger mb-1">High Priority Deadlines Warning Threshold Radar</h5>
+            <p class="small text-dark opacity-75 mb-2">You have unsubmitted evaluative coursework elements approaching absolute lockdown within the next 48 hours:</p>
+            <div class="row g-2">
+                @foreach (var task in incomingUrgentRadarTasks)
+                {
+                    var timeRemaining = task.DueDate - currentUtc;
+                    <div class="col-md-6">
+                        <div class="bg-white bg-opacity-60 rounded-3 p-2.5 border border-danger border-opacity-20 d-flex justify-content-between align-items-center small">
+                            <div>
+                                <strong class="text-dark">@task.Course?.Code: @task.Title</strong>
+                                <span class="d-block text-muted" style="font-size:0.75rem;"><i class="bi bi-clock"></i> Closes: @task.DueDate.ToLocalTime().ToString("MMM dd, HH:mm")</span>
+                            </div>
+                            <span class="badge bg-danger rounded-pill px-2.5 py-1">
+                                @((int)timeRemaining.TotalHours)h @timeRemaining.Minutes m left
+                            </span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 }
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Course</th>
-                <th>Assignment</th>
-                <th>Submitted</th>
-                <th>Grade</th>
-                <th>Feedback</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var sub in Model)
+
+<div class="row g-4">
+    <!-- LEFT COLUMN: Main Cumulative Course Blocks -->
+    <div class="col-lg-8">
+        @if (!courseGroupings.Any())
+        {
+            <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
+                <i class="bi bi-journal-x text-muted display-3 d-block mb-2"></i>
+                <h4 class="fw-bold">No Syllabus History Found</h4>
+                <p class="text-muted mb-0">You are either not enrolled or haven't submitted anything yet.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var courseGroup in courseGroupings)
             {
-                <tr>
-                    <td>@sub.Assignment?.Course?.Title (@sub.Assignment?.Course?.Code)</td>
-                    <td>@sub.Assignment?.Title</td>
-                    <td>@sub.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        @if (sub.Grade.HasValue)
+                var courseSample = courseGroup.First().Assignment!.Course!;
+
+                double accumulatedEarnedWeights = 0;
+                double accumulatedTotalScales = 0;
+
+                var subCategoricalGroup = courseGroup.GroupBy(s => s.Assignment!.Category.ToString());
+                var categoryMetrics = new Dictionary<string, double>();
+
+                foreach (var group in subCategoricalGroup)
+                {
+                    double pointsEarned = 0;
+                    double pointsMax = 0;
+                    var gradedItems = group.Where(s => s.Grade.HasValue).ToList();
+
+                    foreach (var item in gradedItems)
+                    {
+                        pointsEarned += item.Grade!.Value;
+                        pointsMax += item.Assignment!.MaxPoints;
+                    }
+
+                    if (pointsMax > 0)
+                    {
+                        double performanceRatio = (pointsEarned / pointsMax) * 100;
+                        categoryMetrics[group.Key] = performanceRatio;
+
+                        if (weightMap.TryGetValue(group.Key, out var scalar))
                         {
-                            <span class="badge bg-success">@sub.Grade / @sub.Assignment?.MaxPoints</span>
+                            accumulatedEarnedWeights += (performanceRatio * scalar);
+                            accumulatedTotalScales += scalar;
                         }
-                        else
-                        {
-                            <span class="badge bg-warning">Not graded</span>
-                        }
-                    </td>
-                    <td>@sub.Feedback</td>
-                </tr>
+                    }
+                }
+
+                double finalWeightedPercentage = accumulatedTotalScales > 0 ? (accumulatedEarnedWeights / accumulatedTotalScales) : 0.0;
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden bg-white">
+                    <div class="card-header bg-dark p-4 border-bottom-0 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <span class="badge bg-primary px-3 py-1.5 rounded-pill fw-bold font-monospace mb-1.5">@courseSample.Code</span>
+                            <h4 class="m-0 text-white fw-bold">@courseSample.Title</h4>
+                            <small class="text-muted"><i class="bi bi-calendar3"></i> Academic Session Focus: @courseSample.Term</small>
+                        </div>
+                        <div class="text-end bg-white bg-opacity-10 p-3 rounded-4 border border-white border-opacity-10">
+                            <small class="text-white-50 d-block text-uppercase small tracking-wider mb-0.5">Weighted Standing</small>
+                            <span class="text-warning display-6 fw-bold leading-none">@finalWeightedPercentage.ToString("0.0")%</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <!-- Horizontal Progress Tracker Metrics Row -->
+                        <div class="row g-2 mb-4">
+                            @foreach (var cat in new[] { "CAT1", "CAT2", "Project", "Exam" })
+                            {
+                                double scoreVal = categoryMetrics.ContainsKey(cat) ? categoryMetrics[cat] : 0.0;
+                                string progressColor = scoreVal >= 75 ? "bg-success" : scoreVal >= 50 ? "bg-warning" : "bg-danger";
+
+                                <div class="col-md-3 col-6">
+                                    <div class="p-2.5 bg-light rounded-3 border text-center">
+                                        <div class="small fw-bold text-dark mb-1">@cat <span class="text-muted font-normal">(@(cat == "Exam" ? "40%" : "20%"))</span></div>
+                                        <div class="font-monospace fw-bold text-secondary small mb-1.5">
+                                            @(categoryMetrics.ContainsKey(cat) ? scoreVal.ToString("0.0") + "%" : "---")
+                                        </div>
+                                        <div class="progress rounded-pill mx-auto" style="height: 4px; max-width: 80px;">
+                                            <div class="progress-bar @progressColor rounded-pill" style="width: @(scoreVal)%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Coursework Deliverable Table Sub-Matrix Grid -->
+                        <div class="table-responsive border rounded-3">
+                            <table class="table table-hover align-middle mb-0 text-center small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start ps-3">Task Details</th>
+                                        <th>Classification</th>
+                                        <th>Submission Log</th>
+                                        <th class="text-end pe-3">Evaluation Feedback</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var submission in courseGroup)
+                                    {
+                                        <tr>
+                                            <td class="text-start ps-3 fw-bold text-dark">@submission.Assignment?.Title</td>
+                                            <td><span class="badge bg-light border text-dark font-normal">@submission.Assignment?.Category</span></td>
+                                            <td class="text-muted font-monospace">@submission.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td>
+                                                @if (submission.IsLate)
+                                                {
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger px-2 py-1">Late Submission</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success bg-opacity-10 text-success px-2 py-1">On Time</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                @if (submission.Grade.HasValue)
+                                                {
+                                                    <div class="d-inline-flex gap-1 align-items-center">
+                                                        <span class="badge bg-success px-2 py-1.5 fw-bold">@submission.Grade.Value / @submission.Assignment?.MaxPoints</span>
+
+                                                        <button class="btn btn-sm btn-light border p-1 rounded-3 text-primary"
+                                                                type="button"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#critiqueModal_@submission.Id"
+                                                                title="Open Instructor Feedback">
+                                                            <i class="bi bi-chat-left-text-fill"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- MODAL STRUCTURAL DRAWERS DIALOG LAYER CONTAINER -->
+                                                    <div class="modal fade text-start" id="critiqueModal_@submission.Id" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered">
+                                                            <div class="modal-content rounded-4 border-0 shadow-lg">
+                                                                <div class="modal-header bg-light border-0 pt-4 px-4 pb-2">
+                                                                    <h5 class="fw-bold text-dark m-0"><i class="bi bi-patch-check-fill text-success"></i> Evaluation Feedback Sheet</h5>
+                                                                    <button type="button" class="btn-close" data-bs-close="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body p-4">
+                                                                    <div class="mb-3">
+                                                                        <small class="text-muted d-block uppercase tracking-wider font-semibold" style="font-size:0.7rem;">Target Module Task</small>
+                                                                        <span class="fw-bold text-dark fs-5">@submission.Assignment?.Title</span>
+                                                                    </div>
+                                                                    <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center mb-4">
+                                                                        <div>
+                                                                            <small class="text-muted d-block">Earned Academic Points Score</small>
+                                                                            <span class="fw-extrabold text-dark font-monospace fs-4">@submission.Grade.Value</span> <span class="text-muted">/ @submission.Assignment?.MaxPoints pts</span>
+                                                                        </div>
+                                                                        <span class="badge bg-success bg-opacity-10 text-success fw-bold p-2.5 rounded-pill">
+                                                                            @(((double)submission.Grade.Value / submission.Assignment!.MaxPoints * 100).ToString("0.0"))% Ratio
+                                                                        </span>
+                                                                    </div>
+                                                                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-chat-quote text-primary"></i> Qualitative Evaluation Feedback</h6>
+                                                                    <div class="p-3 bg-light rounded-3 border border-dashed text-muted font-normal small text-break style-quote" style="max-height:220px; overflow-y:auto;">
+                                                                        @(string.IsNullOrEmpty(submission.Feedback) ? "No structural evaluation criteria notes appended by the checking module instructor." : submission.Feedback)
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer border-0 pb-4 px-4 pt-0">
+                                                                    <button type="button" class="btn btn-secondary rounded-pill px-4 w-100 btn-sm" data-bs-close="modal">Close Assessment Sheet</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted font-normal italic small">Awaiting grading verification review...</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        }
+    </div>
+
+    <!-- RIGHT COLUMN: Client-Side Interactive "What-If" Grade Simulator Engine Panel -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 bg-white sticky-top" style="top: 24px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-cpu text-primary"></i> "What-If" Grade Simulator</h5>
+                <p class="text-muted small border-bottom pb-2 mb-3">Adjust target projection matrix thresholds to isolate cumulative course outcomes metrics.</p>
+
+                <div class="form-group mb-3">
+                    <label class="form-label text-dark small fw-bold d-flex justify-content-between">
+                        <span>CAT1 Score Projection</span>
+                        <span id="lblSimCat1" class="font-monospace text-primary fw-bold">70%</span>
+                    </label>
+                    <input type="range" id="simCat1" class="form-range" min="0" max="100" value="70" oninput="runSimulationEngine()" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label text-dark small fw-bold d-flex justify-content-between">
+                        <span>CAT2 Score Projection</span>
+                        <span id="lblSimCat2" class="font-monospace text-primary fw-bold">70%</span>
+                    </label>
+                    <input type="range" id="simCat2" class="form-range" min="0" max="100" value="70" oninput="runSimulationEngine()" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label text-dark small fw-bold d-flex justify-content-between">
+                        <span>Project Score Projection</span>
+                        <span id="lblSimProj" class="font-monospace text-primary fw-bold">75%</span>
+                    </label>
+                    <input type="range" id="simProj" class="form-range" min="0" max="100" value="75" oninput="runSimulationEngine()" />
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label text-dark small fw-bold d-flex justify-content-between">
+                        <span>Final Exam Projection</span>
+                        <span id="lblSimExam" class="font-monospace text-primary fw-bold">60%</span>
+                    </label>
+                    <input type="range" id="simExam" class="form-range" min="0" max="100" value="60" oninput="runSimulationEngine()" />
+                </div>
+
+                <!-- Live Simulation Output Box Display Component -->
+                <div class="p-3 bg-dark rounded-4 border text-center shadow-inner">
+                    <small class="text-white-50 text-uppercase d-block mb-1 font-semibold tracking-wider" style="font-size:0.7rem;">Simulated Outcome Target</small>
+                    <h2 id="lblSimFinalOutcome" class="display-5 text-warning fw-extrabold m-0 leading-none">67.0%</h2>
+                    <div id="lblSimStatusBadge" class="badge bg-success mt-2 px-3 py-1.5 rounded-pill font-normal">Syllabus Pass Profile Status</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Interactive Calculation Matrix Projection Engine Handler -->
+    <script type="text/javascript">
+        function runSimulationEngine() {
+            var cat1 = parseFloat(document.getElementById("simCat1").value);
+            var cat2 = parseFloat(document.getElementById("simCat2").value);
+            var proj = parseFloat(document.getElementById("simProj").value);
+            var exam = parseFloat(document.getElementById("simExam").value);
+
+            document.getElementById("lblSimCat1").innerText = cat1.toFixed(0) + "%";
+            document.getElementById("lblSimCat2").innerText = cat2.toFixed(0) + "%";
+            document.getElementById("lblSimProj").innerText = proj.toFixed(0) + "%";
+            document.getElementById("lblSimExam").innerText = exam.toFixed(0) + "%";
+
+            var compiledOutcomeProjection = (cat1 * 0.20) + (cat2 * 0.20) + (proj * 0.20) + (exam * 0.40);
+
+            var lblOutcome = document.getElementById("lblSimFinalOutcome");
+            var lblStatus = document.getElementById("lblSimStatusBadge");
+
+            lblOutcome.innerText = compiledOutcomeProjection.toFixed(1) + "%";
+
+            if (compiledOutcomeProjection >= 75.0) {
+                lblStatus.innerText = "Excellent Distinction Profile Standing";
+                lblStatus.className = "badge bg-success mt-2 px-3 py-1.5 rounded-pill font-normal";
+            } else if (compiledOutcomeProjection >= 50.0) {
+                lblStatus.innerText = "Satisfactory Clear Credit Profile";
+                lblStatus.className = "badge bg-info mt-2 px-3 py-1.5 rounded-pill font-normal";
+            } else {
+                lblStatus.innerText = "Below Core Competency Passing Limits";
+                lblStatus.className = "badge bg-danger mt-2 px-3 py-1.5 rounded-pill font-normal text-white";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            runSimulationEngine();
+        });
+    </script>
 }

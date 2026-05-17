@@ -154,3 +154,37 @@ body {
         padding-right: 2rem;
     }
 }
+
+@media print {
+    /* Hide interactive navigational artifacts and overlay layout structures */
+    header, footer, nav, .btn, .btn-sm, input[type="range"], .toast-container, button {
+        display: none !important;
+    }
+
+    /* Rebalance layout body geometry constraints for standard paper sheets */
+    body, .container, main {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Transform high-density dark blocks to high-contrast clean borders */
+    .card-header.bg-dark {
+        background: #f8f9fa !important;
+        color: #000000 !important;
+        border-bottom: 2px solid #000000 !important;
+    }
+
+    .card-header.bg-dark h4, .card-header.bg-dark small {
+        color: #000000 !important;
+    }
+
+    /* Force background colors to display seamlessly on physical prints */
+    .table, .card {
+        border: 1px solid #dee2e6 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

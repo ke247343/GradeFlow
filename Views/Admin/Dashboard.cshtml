@@ -1,60 +1,83 @@
+@model IEnumerable<GradeFlow.Models.AuditLog>
 @{
     ViewData["Title"] = "Admin Dashboard";
-    dynamic stats = Model;
 }
 
 <div class="container">
-    <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0 fw-bold"><i class="bi bi-speedometer2 text-primary"></i> System Administration Control Deck</h2>
+        <a asp-action="TrashCan" class="btn btn-outline-danger rounded-pill px-4 shadow-sm">
+            <i class="bi bi-trash3-fill"></i> System Data Recovery Hub (Trash Can)
+        </a>
+    </div>
 
-    <div class="row g-4">
+    <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-people fs-1 text-primary"></i>
-                    <h3 class="mt-2">@stats.TotalUsers</h3>
-                    <p class="text-muted">Total Users</p>
-                </div>
+            <div class="card text-center border-0 shadow-sm rounded-4 bg-white p-3">
+                <i class="bi bi-people-fill fs-2 text-primary mb-1"></i>
+                <h4 class="fw-bold text-dark m-0">@ViewBag.TotalUsers</h4>
+                <p class="text-muted small m-0">Registered Core Users</p>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-book fs-1 text-success"></i>
-                    <h3 class="mt-2">@stats.TotalCourses</h3>
-                    <p class="text-muted">Courses</p>
-                </div>
+            <div class="card text-center border-0 shadow-sm rounded-4 bg-white p-3">
+                <i class="bi bi-journal-bookmark-fill fs-2 text-success mb-1"></i>
+                <h4 class="fw-bold text-dark m-0">@ViewBag.TotalCourses</h4>
+                <p class="text-muted small m-0">Active Course Tracks</p>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-file-text fs-1 text-warning"></i>
-                    <h3 class="mt-2">@stats.TotalAssignments</h3>
-                    <p class="text-muted">Assignments</p>
-                </div>
+            <div class="card text-center border-0 shadow-sm rounded-4 bg-white p-3">
+                <i class="bi bi-file-text-fill fs-2 text-warning mb-1"></i>
+                <h4 class="fw-bold text-dark m-0">@ViewBag.TotalAssignments</h4>
+                <p class="text-muted small m-0">Provisioned Tasks</p>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-cloud-upload fs-1 text-info"></i>
-                    <h3 class="mt-2">@stats.TotalSubmissions</h3>
-                    <p class="text-muted">Submissions</p>
-                </div>
+            <div class="card text-center border-0 shadow-sm rounded-4 bg-white p-3">
+                <i class="bi bi-graph-up-arrow fs-2 text-info mb-1"></i>
+                <h4 class="fw-bold text-dark m-0">@(((double)ViewBag.AverageGrade).ToString("0.0"))%</h4>
+                <p class="text-muted small m-0">Platform Average Outcome</p>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <i class="bi bi-graph-up"></i> Average Grade
-                </div>
-                <div class="card-body text-center">
-                    <h2 class="display-4">@stats.AverageGrade.ToString("0.0")</h2>
-                    <small>out of max points per assignment</small>
-                </div>
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="card-header bg-white pt-4 px-4 pb-2 border-bottom-0">
+            <h5 class="fw-bold text-dark m-0"><i class="bi bi-shield-lock-fill text-danger"></i> System Activity Audit Log Trail Ledger</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Timestamp Event</th>
+                            <th>Operator Account</th>
+                            <th>Action Action</th>
+                            <th class="pe-4">Contextual Modification Parameters Summary Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model)
+                        {
+                            string actionColor = log.OperationAction.Contains("PURGE") ? "bg-danger" : "bg-primary";
+                            <tr>
+                                <td class="ps-4 font-monospace text-muted">@log.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td class="fw-bold text-dark">@log.ExecutedByEmail</td>
+                                <td><span class="badge @actionColor">@log.OperationAction</span></td>
+                                <td class="pe-4 text-muted text-break">@log.DetailsContext</td>
+                            </tr>
+                        }
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    No administrative events committed to platform ledger logs currently.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

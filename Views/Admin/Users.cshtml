@@ -1,66 +1,98 @@
-@model IEnumerable<GradeFlow.Controllers.UserRoleViewModel>
-
+@model IEnumerable<GradeFlow.Models.UserRoleViewModel>
 @{
     ViewData["Title"] = "Manage Users";
 }
 
 <div class="container">
-    <h2 class="mb-4"><i class="bi bi-people"></i> User Management</h2>
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <a asp-action="Dashboard" class="btn btn-sm btn-outline-secondary rounded-circle p-2 border-0">
+                <i class="bi bi-arrow-left fs-5 leading-none"></i>
+            </a>
+            <div>
+                <small class="text-muted text-uppercase tracking-wider fw-bold">Platform Governance</small>
+                <h2 class="fw-bold m-0 text-dark">User Identity Security Access</h2>
+            </div>
+        </div>
+        <div class="text-muted small">
+            <i class="bi bi-shield-fill-check text-success"></i> Active Enforcement Matrix
+        </div>
+    </div>
 
+    <!-- System Messaging Alerts Pipeline Wrapper -->
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>@TempData["Success"]</div>
         </div>
     }
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+            <div>@TempData["Error"]</div>
         </div>
     }
 
-    <div class="card shadow-sm">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
         <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Email</th>
-                        <th>Current Role</th>
-                        <th>Change Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model)
-                    {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-center small">
+                    <thead class="table-light">
                         <tr>
-                            <td>@user.Email</td>
-                            <td>
-                                <span class="badge bg-primary">@user.CurrentRole</span>
-                            </td>
-                            <td>
-                                <form asp-action="AssignRole" method="post" class="d-flex gap-2">
-                                    <input type="hidden" name="userId" value="@user.UserId" />
-                                    <select name="role" class="form-select form-select-sm w-auto">
-                                        <option value="Student">Student</option>
-                                        <option value="Instructor">Instructor</option>
-                                        <option value="Admin">Admin</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">Assign</button>
-                                </form>
-                            </td>
-                            <td>
-                                <a asp-action="Delete" asp-route-id="@user.UserId" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i> Delete
-                                </a>
-                            </td>
+                            <th class="ps-4 text-start">Registered Account Email Target</th>
+                            <th>Current Security Context Role</th>
+                            <th>Modify Privileges Routing Action</th>
+                            <th class="pe-4 text-end">Account Maintenance Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            string roleBadgeColor = user.CurrentRole switch
+                            {
+                                "Admin" => "bg-danger text-white shadow-xs",
+                                "Instructor" => "bg-primary text-white",
+                                _ => "bg-secondary text-white bg-opacity-75"
+                            };
+
+                            <tr>
+                                <td class="ps-4 text-start fw-bold text-dark">@user.Email</td>
+                                <td>
+                                    <span class="badge @roleBadgeColor px-2.5 py-1.5 rounded-3 font-monospace">
+                                        @user.CurrentRole
+                                    </span>
+                                </td>
+                                <td>
+                                    <form asp-action="AssignRole" method="post" class="d-inline-flex gap-2 align-items-center justify-content-center">
+                                        <input type="hidden" name="userId" value="@user.UserId" />
+
+                                        <select name="role" class="form-select form-select-sm font-medium text-dark" style="min-width: 130px;">
+                                            <option value="Student" selected="@(user.CurrentRole == "Student")">Student</option>
+                                            <option value="Instructor" selected="@(user.CurrentRole == "Instructor")">Instructor</option>
+                                            <option value="Admin" selected="@(user.CurrentRole == "Admin")">Admin</option>
+                                        </select>
+
+                                        <button type="submit" class="btn btn-sm btn-dark rounded-3 px-3 shadow-sm transition-all">
+                                            Reassign
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <!-- OPTIMIZATION: Converted to an explicit secure Form POST method targeting DeleteUser action -->
+                                    <form asp-action="DeleteUser" method="post" onsubmit="return confirm('CRITICAL SEVERE WARNING: Are you sure you want to completely erase user account @user.Email from identity services registries? This operation cannot be undone and will strip all related records.');">
+                                        <input type="hidden" name="id" value="@user.UserId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-3 px-2.5 py-1.5">
+                                            <i class="bi bi-trash3-fill"></i> Purge User
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "Submit Assignment";
+    var assignment = ViewBag.Assignment as GradeFlow.Models.Assignment;
+}
+
+<div class="d-flex align-items-center gap-2 mb-4">
+    <a asp-controller="Courses" asp-action="Details" asp-route-id="@assignment?.CourseId" class="btn btn-sm btn-outline-secondary rounded-circle p-2 border-0">
+        <i class="bi bi-arrow-left fs-5 leading-none"></i>
+    </a>
+    <div>
+        <small class="text-muted text-uppercase tracking-wider fw-bold">Assignment Upload Portal</small>
+        <h2 class="fw-bold m-0 text-dark">Submit Deliverable</h2>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- LEFT SIDEBAR: Instructions & Restrictions Meta -->
+    <div class="col-md-5 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 bg-white">
+            <div class="card-body p-4">
+                <span class="badge bg-primary bg-opacity-10 text-primary mb-2 px-3 py-1.5 rounded-pill fw-bold">
+                    @assignment?.Category Evaluation Unit
+                </span>
+                <h4 class="fw-bold text-dark mb-3">@assignment?.Title</h4>
+
+                @if (!string.IsNullOrEmpty(assignment?.Description))
+                {
+                    <p class="text-muted small border-bottom pb-3 mb-3">@assignment.Description</p>
+                }
+
+                <div class="mb-3 small">
+                    <label class="text-muted d-block mb-0.5"><i class="bi bi-award"></i> Scale Value Max</label>
+                    <span class="fw-bold text-dark">@assignment?.MaxPoints Points Points Possible</span>
+                </div>
+
+                <div class="mb-3 small">
+                    <label class="text-muted d-block mb-0.5"><i class="bi bi-calendar-x"></i> Submission Deadline</label>
+                    <span class="fw-bold text-dark">@assignment?.DueDate.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                </div>
+
+                <div class="mb-0 small">
+                    <label class="text-muted d-block mb-1"><i class="bi bi-file-earmark-check"></i> Whitelisted File Formats</label>
+                    <code class="d-inline-block bg-light px-2.5 py-1 rounded border text-danger font-monospace">
+                        @assignment?.AllowedFileTypes
+                    </code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: File Drag-and-Drop Form Trigger Container -->
+    <div class="col-md-7 col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4 d-flex flex-column justify-content-center">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="assignmentId" value="@assignment?.Id" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 rounded-3 mb-3 small"></div>
+
+                    <!-- Visual File Selection Area -->
+                    <div class="p-5 border border-2 border-dashed rounded-4 text-center bg-light bg-opacity-50 mb-4 transition-hover">
+                        <i class="bi bi-cloud-arrow-up-fill text-primary display-3 mb-2 d-block"></i>
+                        <h5 class="fw-bold text-dark mb-1">Select your deliverable file</h5>
+                        <p class="text-muted small mb-3">Ensure your assignment matches the specified formatting limits.</p>
+
+                        <div class="d-inline-block mx-auto" style="max-width: 320px;">
+                            <input type="file" name="file" class="form-control form-control-sm font-monospace shadow-sm" required />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end border-top pt-3">
+                        <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-check-lg"></i> Complete Turn-in
+                        </button>
+                        <a asp-controller="Courses" asp-action="Details" asp-route-id="@assignment?.CourseId" class="btn btn-secondary rounded-pill px-4">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,15 +1,23 @@
 @model GradeFlow.Models.Course
 @inject GradeFlow.Data.ApplicationDbContext _context
 @using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
 @{
     ViewData["Title"] = $"{Model.Code} - Details";
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var currentUtc = DateTime.UtcNow;
 
-    var courseAssignments = _context.Assignments
+    // Load assignments based on role visibility constraints
+    var rawAssignments = _context.Assignments
         .Where(a => a.CourseId == Model.Id)
         .OrderBy(a => a.DueDate)
         .ToList();
 
-    // RECOMMENDATION 3 UI: Retrieve announcements feed natively
+    // Students only see assignments that have passed their Release Date
+    var courseAssignments = User.IsInRole("Student")
+        ? rawAssignments.Where(a => currentUtc >= a.ReleaseDate).ToList()
+        : rawAssignments;
+
     var classAnnouncements = _context.Announcements
         .Where(ann => ann.CourseId == Model.Id)
         .OrderByDescending(ann => ann.CreatedAt)
@@ -27,7 +35,6 @@
         </div>
     </div>
 
-    <!-- RECOMMENDATION 1 UI ACTION: Quick Access Gradebook Button Link -->
     @if (User.IsInRole("Admin") || User.IsInRole("Instructor"))
     {
         <a asp-controller="Grades" asp-action="Gradebook" asp-route-courseId="@Model.Id" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
@@ -46,9 +53,8 @@
 }
 
 <div class="row g-4">
-    <!-- LEFT SIDEBAR: Info, Roster, and Announcements Dispatcher -->
+    <!-- LEFT SIDEBAR: Metadata, Announcements, and Bulletins -->
     <div class="col-lg-4">
-        <!-- Information Overview -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
                 <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">Information Overview</h5>
@@ -60,21 +66,20 @@
                     <dd class="col-sm-8 fw-semibold text-dark text-truncate">@Model.Instructor?.Email</dd>
                 </dl>
 
-                <div class="d-flex gap-2 mt-4 border-top pt-3">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-warning w-100 rounded-pill">
-                        <i class="bi bi-pencil"></i> Modify Course
-                    </a>
-                    @if (User.IsInRole("Admin") || User.IsInRole("Instructor"))
-                    {
+                @if (User.IsInRole("Admin") || User.IsInRole("Instructor"))
+                {
+                    <div class="d-flex gap-2 mt-4 border-top pt-3">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-warning w-100 rounded-pill">
+                            <i class="bi bi-pencil"></i> Modify Course
+                        </a>
                         <a asp-action="Enroll" asp-route-id="@Model.Id" class="btn btn-sm btn-primary w-100 rounded-pill shadow-sm">
                             <i class="bi bi-person-plus"></i> Enroll Student
                         </a>
-                    }
-                </div>
+                    </div>
+                }
             </div>
         </div>
 
-        <!-- RECOMMENDATION 3 DESIGN: Broadcast News Creation Module Form -->
         @if (User.IsInRole("Admin") || User.IsInRole("Instructor"))
         {
             <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -86,7 +91,7 @@
                             <input type="text" name="title" class="form-control form-control-sm" placeholder="Bulletin Subject Title" required />
                         </div>
                         <div class="mb-3">
-                            <textarea name="content" class="form-control form-control-sm" rows="3" placeholder="Compose alert notifications data text parameters..." required></textarea>
+                            <textarea name="content" class="form-control form-control-sm" rows="3" placeholder="Compose alert notifications..." required></textarea>
                         </div>
                         <button type="submit" class="btn btn-sm btn-danger w-100 rounded-pill">Deploy Broadcast</button>
                     </form>
@@ -94,7 +99,7 @@
             </div>
         }
 
-        <!-- Broadcast Feed Dashboard -->
+        <!-- Broadcast Bulletins Feed Panel -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0">
                 <h5 class="fw-bold m-0 text-dark"><i class="bi bi-chat-square-text text-info"></i> News Bulletin Feed</h5>
@@ -118,23 +123,26 @@
                 else
                 {
                     <div class="text-center py-3 border border-dashed rounded-3 bg-light bg-opacity-50">
-                        <p class="text-muted small m-0">No broadcasts active for this board context.</p>
+                        <p class="text-muted small m-0">No announcements posted for this course yet.</p>
                     </div>
                 }
             </div>
         </div>
     </div>
 
-    <!-- RIGHT PANEL: Integrated Assessment Matrix -->
+    <!-- RIGHT PANEL: Dynamic Multi-Role Assessment Matrix -->
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold m-0 text-dark">
-                    <i class="bi bi-journal-text text-success"></i> Course Coursework & Assessments
+                    <i class="bi bi-journal-text text-success"></i> Course Workwork & Assessments
                 </h5>
-                <a asp-controller="Assignments" asp-action="Create" asp-route-courseId="@Model.Id" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm">
-                    <i class="bi bi-plus-lg"></i> Create Assignment
-                </a>
+                @if (User.IsInRole("Admin") || User.IsInRole("Instructor"))
+                {
+                    <a asp-controller="Assignments" asp-action="Create" asp-route-courseId="@Model.Id" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm">
+                        <i class="bi bi-plus-lg"></i> Create Assignment
+                    </a>
+                }
             </div>
 
             <div class="card-body p-4 pt-2">
@@ -144,64 +152,114 @@
                         <table class="table table-hover align-middle mb-0 small">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-3">Assignment Title</th>
-                                    <th>Release Window</th>
-                                    <th>Due Date Target</th>
-                                    <th class="pe-3 text-end">Evaluation Hub</th>
+                                    <th class="ps-3">Assignment Details</th>
+                                    @if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
+                                    {
+                                        <th>Release Window</th>
+                                        <th>Due Date Target</th>
+                                        <th class="pe-3 text-end">Evaluation Hub</th>
+                                    }
+                                    else
+                                    {
+                                        <th>Target Deadline</th>
+                                        <th>Submission Status</th>
+                                        <th class="pe-3 text-end">Action Panel</th>
+                                    }
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var assignment in courseAssignments)
                                 {
-                                    var evaluationQueueCount = _context.Submissions
-                                        .Count(s => s.AssignmentId == assignment.Id && !s.Grade.HasValue);
-                                    var currentUtcCheck = DateTime.UtcNow;
-
-                                    <tr>
-                                        <td class="ps-3">
-                                            <span class="fw-bold text-dark d-block">@assignment.Title</span>
-                                            <span class="badge bg-light border text-dark font-normal" style="font-size: 0.7rem;">Max: @assignment.MaxPoints pts</span>
-                                        </td>
-                                        <td>
-                                            @if (currentUtcCheck < assignment.ReleaseDate)
-                                            {
-                                                <span class="badge bg-warning bg-opacity-10 text-warning px-2 py-1" title="Hidden to students currently">
-                                                    Scheduled: @assignment.ReleaseDate.ToLocalTime().ToString("MM/dd HH:mm")
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-success bg-opacity-10 text-success px-2 py-1">
-                                                    Live Since: @assignment.ReleaseDate.ToLocalTime().ToString("MM/dd")
-                                                </span>
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (currentUtcCheck > assignment.CutOffDate)
-                                            {
-                                                <span class="badge bg-secondary text-white px-2 py-1" title="Absolute block lock executed">
-                                                    Locked Out Cold
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-dark fw-medium">
-                                                    @assignment.DueDate.ToLocalTime().ToString("MMM dd, HH:mm")
-                                                </span>
-                                            }
-                                        </td>
-                                        <td class="pe-3 text-end">
-                                            <a asp-controller="Grades" asp-action="Index" asp-route-assignmentId="@assignment.Id" class="btn btn-sm btn-primary rounded-3 position-relative px-3">
-                                                <i class="bi bi-clipboard-check"></i> Submissions
-                                                @if (evaluationQueueCount > 0)
+                                    if (User.IsInRole("Admin") || User.IsInRole("Instructor"))
+                                    {
+                                        var queueCount = _context.Submissions.Count(s => s.AssignmentId == assignment.Id && !s.Grade.HasValue);
+                                        <tr>
+                                            <td class="ps-3">
+                                                <span class="fw-bold text-dark d-block">@assignment.Title</span>
+                                                <span class="badge bg-light border text-dark font-normal" style="font-size: 0.7rem;">@assignment.Category - Max: @assignment.MaxPoints pts</span>
+                                            </td>
+                                            <td>
+                                                @if (currentUtc < assignment.ReleaseDate)
                                                 {
-                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white">
-                                                        @evaluationQueueCount
-                                                    </span>
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-2 py-1">Scheduled</span>
                                                 }
-                                            </a>
-                                        </td>
-                                    </tr>
+                                                else
+                                                {
+                                                    <span class="badge bg-success bg-opacity-10 text-success px-2 py-1">Live</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (currentUtc > assignment.CutOffDate)
+                                                {
+                                                    <span class="badge bg-secondary text-white px-2 py-1">Locked</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-dark fw-medium">@assignment.DueDate.ToLocalTime().ToString("MMM dd, HH:mm")</span>
+                                                }
+                                            </td>
+                                            <td class="pe-3 text-end">
+                                                <a asp-controller="Grades" asp-action="Index" asp-route-assignmentId="@assignment.Id" class="btn btn-sm btn-primary rounded-3 position-relative px-3">
+                                                    <i class="bi bi-clipboard-check"></i> Submissions
+                                                    @if (queueCount > 0)
+                                                    {
+                                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white">@queueCount</span>
+                                                    }
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        // STUDENT SPECIFIC PRESENTATION ROW LAYOUT
+                                        var submission = _context.Submissions.FirstOrDefault(s => s.AssignmentId == assignment.Id && s.StudentId == userId);
+                                        <tr>
+                                            <td class="ps-3">
+                                                <span class="fw-bold text-dark d-block">@assignment.Title</span>
+                                                <span class="badge bg-light border text-dark font-normal" style="font-size: 0.7rem;">@assignment.Category - Max: @assignment.MaxPoints pts</span>
+                                            </td>
+                                            <td class="text-muted">@assignment.DueDate.ToLocalTime().ToString("MMM dd, HH:mm")</td>
+                                            <td>
+                                                @if (submission != null)
+                                                {
+                                                    if (submission.Grade.HasValue)
+                                                    {
+                                                        <span class="badge bg-success text-white px-2.5 py-1">Graded: @submission.Grade / @assignment.MaxPoints</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-info bg-opacity-10 text-info px-2.5 py-1">Submitted (Pending Review)</span>
+                                                    }
+                                                }
+                                                else if (currentUtc > assignment.CutOffDate)
+                                                {
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger px-2.5 py-1"><i class="bi bi-lock-fill"></i> Missed (Closed)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-2.5 py-1">Not Submitted</span>
+                                                }
+                                            </td>
+                                            <td class="pe-3 text-end">
+                                                @if (submission == null && currentUtc <= assignment.CutOffDate)
+                                                {
+                                                    <a asp-controller="Submissions" asp-action="Create" asp-route-assignmentId="@assignment.Id" class="btn btn-sm btn-success rounded-3 px-3">
+                                                        <i class="bi bi-cloud-arrow-up"></i> Submit
+                                                    </a>
+                                                }
+                                                else if (submission != null && !submission.Grade.HasValue && currentUtc <= assignment.CutOffDate)
+                                                {
+                                                    <a asp-controller="Submissions" asp-action="Create" asp-route-assignmentId="@assignment.Id" class="btn btn-sm btn-outline-secondary rounded-3 px-3">
+                                                        Re-submit
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-sm btn-light rounded-3 px-3 text-muted" disabled>Locked</button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
                                 }
                             </tbody>
                         </table>
@@ -211,8 +269,8 @@
                 {
                     <div class="text-center py-5 border border-dashed rounded-3 bg-light bg-opacity-50 my-2">
                         <i class="bi bi-journal-code text-muted display-6"></i>
-                        <h5 class="mt-2 fw-bold text-dark">No Assignments Yet</h5>
-                        <p class="text-muted small mb-3">Get started by building out your syllabus evaluations.</p>
+                        <h5 class="mt-2 fw-bold text-dark">No Coursework Assigned</h5>
+                        <p class="text-muted small m-0">There are no open or active assessments assigned to this module view currently.</p>
                     </div>
                 }
             </div>

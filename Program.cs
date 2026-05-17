@@ -48,5 +48,24 @@ using (var scope = app.Services.CreateScope())
 {
     await RoleInitializer.InitializeAsync(scope.ServiceProvider);
 }
+// AUTOMATED DATA SEEDING CONTEXT TRIGGER
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        // Run database execution seeds asynchronously on startup sequence
+        await GradeFlow.Data.DbInitializer.SeedAsync(userManager, roleManager, context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An anomaly occurred during the database seeding cycle process initialization.");
+    }
+}
 
 app.Run();

@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "System Maintenance Center";
+    var deletedCourses = ViewBag.DeletedCourses as List<GradeFlow.Models.Course> ?? new List<GradeFlow.Models.Course>();
+    var deletedAssignments = ViewBag.DeletedAssignments as List<GradeFlow.Models.Assignment> ?? new List<GradeFlow.Models.Assignment>();
+}
+
+<div class="container">
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <a asp-action="Dashboard" class="btn btn-sm btn-outline-secondary rounded-circle p-2 border-0">
+            <i class="bi bi-arrow-left fs-5 leading-none"></i>
+        </a>
+        <div>
+            <small class="text-muted text-uppercase tracking-wider fw-bold">Maintenance Console</small>
+            <h2 class="fw-bold m-0 text-dark">System Data Recovery Hub (Trash Can)</h2>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden bg-white">
+        <div class="card-header bg-white pt-4 px-4 pb-2 border-bottom-0">
+            <h5 class="fw-bold text-dark m-0"><i class="bi bi-folder-x text-danger"></i> Soft-Deleted Course Modules Registers</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Code</th>
+                            <th>Module Title</th>
+                            <th>Deleted At</th>
+                            <th class="pe-4 text-end">Database Actions Hub Controls</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in deletedCourses)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark"><span class="badge bg-secondary">@c.Code</span></td>
+                                <td>@c.Title</td>
+                                <td class="text-muted font-monospace">@c.DeletedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <form asp-action="RestoreCourse" method="post">
+                                            <input type="hidden" name="id" value="@c.Id" />
+                                            <button type="submit" class="btn btn-sm btn-success rounded-3"><i class="bi bi-arrow-counterclockwise"></i> Restore</button>
+                                        </form>
+                                        <form asp-action="PurgeCourse" method="post" onsubmit="return confirm('WARNING: Permanently purging this course removes it completely from PostgreSQL. Continue?');">
+                                            <input type="hidden" name="id" value="@c.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger rounded-3"><i class="bi bi-trash-fill"></i> Purge</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        @if (!deletedCourses.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No soft-deleted courses found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-header bg-white pt-4 px-4 pb-2 border-bottom-0">
+            <h5 class="fw-bold text-dark m-0"><i class="bi bi-file-earmark-x text-danger"></i> Soft-Deleted Assignment Evaluations</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Task Component Name</th>
+                            <th>Parent Module</th>
+                            <th>Deleted At</th>
+                            <th class="pe-4 text-end">Database Actions Hub Controls</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in deletedAssignments)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark">@a.Title</td>
+                                <td>@a.Course?.Code: @a.Course?.Title</td>
+                                <td class="text-muted font-monospace">@a.DeletedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <form asp-action="RestoreAssignment" method="post">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            <button type="submit" class="btn btn-sm btn-success rounded-3"><i class="bi bi-arrow-counterclockwise"></i> Restore</button>
+                                        </form>
+                                        <form asp-action="PurgeAssignment" method="post" onsubmit="return confirm('WARNING: Permanently purging this assignment removes all attached student submissions and grades. Continue?');">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger rounded-3"><i class="bi bi-trash-fill"></i> Purge</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        @if (!deletedAssignments.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No soft-deleted assignments found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

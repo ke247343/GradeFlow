@@ -13,7 +13,7 @@ namespace GradeFlow.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        // UPDATED: Distribution criteria configured precisely to your syllabus specifications
+        // Distribution criteria configured precisely to your syllabus specifications
         private static readonly Dictionary<AssignmentCategory, double> WeightMap = new()
         {
             { AssignmentCategory.CAT1,    0.20 },
@@ -24,6 +24,7 @@ namespace GradeFlow.Controllers
 
         public GradesController(ApplicationDbContext context) => _context = context;
 
+        // GET: Grades/Index?assignmentId=5
         public async Task<IActionResult> Index(int assignmentId)
         {
             var assignment = await _context.Assignments.Include(a => a.Course).FirstOrDefaultAsync(a => a.Id == assignmentId);
@@ -41,6 +42,7 @@ namespace GradeFlow.Controllers
             return View(submissions);
         }
 
+        // GET: Grades/Gradebook?courseId=5
         public async Task<IActionResult> Gradebook(int courseId)
         {
             var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId);
@@ -57,6 +59,7 @@ namespace GradeFlow.Controllers
             return View(students);
         }
 
+        // EXPORT PORTABILITY STREAMING COMPILER ENGINE
         public async Task<IActionResult> ExportGradebook(int courseId)
         {
             var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId);
@@ -69,7 +72,6 @@ namespace GradeFlow.Controllers
             var metricsMatrix = ComputeWeightedMatrix(students!, assignments, submissions);
             var csvBuilder = new StringBuilder();
 
-            // UPDATED: CSV Column configuration altered to mirror matching category designations
             csvBuilder.AppendLine("Student Email,CAT1 Avg %,CAT2 Avg %,Project Avg %,Exam Avg %,Final Weighted Standings %");
 
             foreach (var student in students)
@@ -84,7 +86,56 @@ namespace GradeFlow.Controllers
             return File(downloadDataPayloadBytes, "text/csv", $"Gradebook_{course.Code}.csv");
         }
 
-        // UPDATED: Mathematical aggregation framework rewritten to accommodate custom categories
+        // RESTORED: GET Action for displaying individual evaluation grading sheets
+        // GET: Grades/Grade/5
+        public async Task<IActionResult> Grade(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var submission = await _context.Submissions
+                .Include(s => s.Assignment)
+                .ThenInclude(a => a != null ? a.Course : null)
+                .Include(s => s.Student)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (submission == null) return NotFound();
+            if (submission.Assignment?.Course == null) return NotFound();
+
+            // Guard rails check: only permit the actual assigned instructor or an administrative user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!User.IsInRole("Admin") && submission.Assignment.Course.InstructorId != userId)
+                return Forbid();
+
+            return View(submission);
+        }
+
+        // POST: Grades/Grade/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Grade(int id, int grade, string feedback)
+        {
+            var submission = await _context.Submissions.Include(s => s.Assignment).ThenInclude(a => a != null ? a.Course : null).FirstOrDefaultAsync(s => s.Id == id);
+            if (submission == null || submission.Assignment?.Course == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!User.IsInRole("Admin") && submission.Assignment.Course.InstructorId != userId)
+                return Forbid();
+
+            if (grade < 0 || grade > submission.Assignment.MaxPoints)
+            {
+                ModelState.AddModelError("", $"Grade must be between 0 and {submission.Assignment.MaxPoints}.");
+                return View(submission);
+            }
+
+            submission.Grade = grade;
+            submission.Feedback = feedback ?? string.Empty;
+            _context.Update(submission);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Grade saved successfully.";
+            return RedirectToAction(nameof(Index), new { assignmentId = submission.AssignmentId });
+        }
+
         private static Dictionary<string, (double Cat1Avg, double Cat2Avg, double ProjAvg, double ExamAvg, double FinalMark)> ComputeWeightedMatrix(
             List<Microsoft.AspNetCore.Identity.IdentityUser> students, List<Assignment> assignments, List<Submission> submissions)
         {
@@ -137,20 +188,6 @@ namespace GradeFlow.Controllers
             }
 
             return trackingContainer;
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Grade(int id, int grade, string feedback)
-        {
-            var submission = await _context.Submissions.Include(s => s.Assignment).ThenInclude(a => a != null ? a.Course : null).FirstOrDefaultAsync(s => s.Id == id);
-            if (submission == null || submission.Assignment?.Course == null) return NotFound();
-
-            submission.Grade = grade;
-            submission.Feedback = feedback;
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index), new { assignmentId = submission.AssignmentId });
         }
     }
 }

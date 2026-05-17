@@ -15,7 +15,16 @@ namespace GradeFlow.Models
         public string Description { get; set; } = string.Empty;
 
         [Required]
+        public AssignmentCategory Category { get; set; }
+
+        [Required]
         public DateTime DueDate { get; set; }
+
+        [Required]
+        public DateTime ReleaseDate { get; set; }
+
+        [Required]
+        public DateTime CutOffDate { get; set; }
 
         [Range(0, 1000)]
         public int MaxPoints { get; set; }
@@ -23,5 +32,8 @@ namespace GradeFlow.Models
         public string AllowedFileTypes { get; set; } = ".pdf,.docx,.txt";
 
         public ICollection<Submission>? Submissions { get; set; }
+
+        // SOFT DELETE INTERCEPTOR FLAG
+        public DateTime? DeletedAt { get; set; }
     }
 }

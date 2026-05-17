@@ -1,4 +1,29 @@
-@if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
-{
-    <a asp-controller="Grades" asp-action="Index" asp-route-assignmentId="@Model.Id" class="btn btn-info">View Submissions</a>
+@model GradeFlow.Models.Assignment
+@{
+    ViewData["Title"] = "Assignment Details";
 }
+
+<h2>@Model.Title</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>Course:</strong> @Model.Course?.Title (@Model.Course?.Code)</p>
+        <p><strong>Due Date:</strong> @Model.DueDate.ToString("yyyy-MM-dd HH:mm")</p>
+        <p><strong>Max Points:</strong> @Model.MaxPoints</p>
+        <p><strong>Allowed File Types:</strong> @Model.AllowedFileTypes</p>
+        <hr />
+        <p>@Html.Raw(Model.Description?.Replace("\n", "<br />"))</p>
+    </div>
+</div>
+
+<div class="mt-3">
+    @if (User.IsInRole("Student"))
+    {
+        <a asp-controller="Submissions" asp-action="Create" asp-route-assignmentId="@Model.Id" class="btn btn-success">Submit Assignment</a>
+    }
+    @if (User.IsInRole("Instructor") || User.IsInRole("Admin"))
+    {
+        <a asp-controller="Grades" asp-action="Index" asp-route-assignmentId="@Model.Id" class="btn btn-info">View Submissions</a>
+    }
+    <a asp-action="Index" asp-route-courseId="@Model.CourseId" class="btn btn-secondary">Back to Assignments</a>
+</div>

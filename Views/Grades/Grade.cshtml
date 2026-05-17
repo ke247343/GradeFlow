@@ -1,35 +1,111 @@
 @model GradeFlow.Models.Submission
 @{
-    ViewData["Title"] = "Grade Submission";
+    ViewData["Title"] = "Evaluate Submission";
 }
 
-<h2>Grade Submission</h2>
-
-<div class="card mb-3">
-    <div class="card-header">
-        <strong>Student:</strong> @Model.Student?.Email
-    </div>
-    <div class="card-body">
-        <p><strong>Assignment:</strong> @Model.Assignment?.Title</p>
-        <p><strong>Submitted:</strong> @Model.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</p>
-        <p><strong>Late:</strong> @(Model.IsLate ? "Yes" : "No")</p>
-        <p><strong>Max Points:</strong> @Model.Assignment?.MaxPoints</p>
-        <p><strong>Download:</strong> <a href="@Model.FilePath" target="_blank">@System.IO.Path.GetFileName(Model.FilePath)</a></p>
+<div class="d-flex align-items-center gap-2 mb-4">
+    <a asp-action="Index" asp-route-assignmentId="@Model.AssignmentId" class="btn btn-sm btn-outline-secondary rounded-circle p-2 border-0">
+        <i class="bi bi-arrow-left fs-5 leading-none"></i>
+    </a>
+    <div>
+        <small class="text-muted text-uppercase tracking-wider fw-bold">Evaluation Sheet</small>
+        <h2 class="fw-bold m-0 text-dark">Assess Deliverable</h2>
     </div>
 </div>
 
-<form asp-action="Grade" method="post">
-    <input type="hidden" name="id" value="@Model.Id" />
-    <div class="form-group mb-3">
-        <label class="control-label">Grade (0 - @Model.Assignment?.MaxPoints)</label>
-        <input type="number" name="grade" class="form-control" value="@Model.Grade" min="0" max="@Model.Assignment?.MaxPoints" />
+<div class="row g-4">
+    <!-- LEFT SIDEBAR: Deliverable Details Summary Panel -->
+    <div class="col-md-5 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">Submission Context</h5>
+
+                <div class="mb-3">
+                    <label class="text-muted small d-block mb-0.5">Student Account</label>
+                    <span class="fw-semibold text-dark text-break">@Model.Student?.Email</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small d-block mb-0.5">Target Assignment</label>
+                    <span class="fw-semibold text-dark">@Model.Assignment?.Title</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small d-block mb-0.5">Uploaded Timestamp</label>
+                    <span class="fw-medium text-dark small font-monospace">@Model.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-muted small d-block mb-1">Timing Status</label>
+                    @if (Model.IsLate)
+                    {
+                        <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1.5">
+                            <i class="bi bi-clock-history"></i> Submitted Late
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill d-inline-flex align-items-center gap-1.5">
+                            <i class="bi bi-check-circle-fill"></i> Logged On-Time
+                        </span>
+                    }
+                </div>
+
+                <!-- Document Download Action Box -->
+                <div class="p-3 bg-light rounded-3 border text-center">
+                    <i class="bi bi-file-earmark-arrow-down text-primary display-6 d-block mb-2"></i>
+                    <a href="@Model.FilePath" target="_blank" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm font-medium w-100 text-truncate">
+                        Download Deliverable File
+                    </a>
+                    <small class="text-muted d-block mt-2 font-monospace text-truncate px-1" style="font-size: 0.75rem;">
+                        @System.IO.Path.GetFileName(Model.FilePath)
+                    </small>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group mb-3">
-        <label class="control-label">Feedback</label>
-        <textarea name="feedback" class="form-control" rows="4">@Model.Feedback</textarea>
+
+    <!-- RIGHT SIDEBAR: Input Score Form -->
+    <div class="col-md-7 col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">Scoring & Feedback Sheet</h5>
+
+                <form asp-action="Grade" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <!-- Score Numeric input mapping cap markers -->
+                    <div class="form-group mb-4">
+                        <label class="form-label fw-bold d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-bookmark-star"></i> Numeric Score</span>
+                            <span class="badge bg-light border text-dark font-normal">Scale Top: @Model.Assignment?.MaxPoints pts</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="number" name="grade" class="form-control form-control-lg text-center font-monospace fw-bold"
+                                   value="@Model.Grade" min="0" max="@Model.Assignment?.MaxPoints" placeholder="--" required />
+                            <span class="input-group-text bg-light fw-medium text-muted font-monospace">/ @Model.Assignment?.MaxPoints Points</span>
+                        </div>
+                        <div class="form-text text-muted small mt-1">Provide integer values matching standard curriculum weighting constraints.</div>
+                    </div>
+
+                    <!-- Commentary Textarea -->
+                    <div class="form-group mb-4">
+                        <label class="form-label fw-bold"><i class="bi bi-chat-left-text"></i> Qualitative Evaluation Feedback</label>
+                        <textarea name="feedback" class="form-control p-3" rows="6"
+                                  placeholder="Provide constructive assessment criteria pointers, milestone breakdowns, or rubric critiques here...">@Model.Feedback</textarea>
+                    </div>
+
+                    <!-- Control actions triggers -->
+                    <div class="d-flex gap-2 pt-2 border-top">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-cloud-check"></i> Commit Evaluation
+                        </button>
+                        <a asp-action="Index" asp-route-assignmentId="@Model.AssignmentId" class="btn btn-secondary rounded-pill px-4">
+                            Cancel
+                        </a>
+                    </div>a
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Save Grade</button>
-        <a asp-action="Index" asp-route-assignmentId="@Model.AssignmentId" class="btn btn-secondary">Cancel</a>
-    </div>
-</form>
+</div>

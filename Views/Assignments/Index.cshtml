@@ -4,34 +4,80 @@
     var course = ViewBag.Course as GradeFlow.Models.Course;
 }
 
-<h2>Assignments for @course?.Title (@course?.Code)</h2>
+<div class="d-flex align-items-center gap-2 mb-4">
+    <a asp-controller="Courses" asp-action="Details" asp-route-id="@course?.Id" class="btn btn-sm btn-outline-secondary rounded-circle p-2 border-0">
+        <i class="bi bi-arrow-left fs-5 leading-none"></i>
+    </a>
+    <div>
+        <small class="text-muted text-uppercase tracking-wider fw-bold">Course Management</small>
+        <h2 class="fw-bold m-0 text-dark">Assignments for @course?.Title</h2>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create" asp-route-courseId="@course?.Id" class="btn btn-primary">Create New Assignment</a>
-    <a asp-controller="Courses" asp-action="Index" class="btn btn-secondary">Back to Courses</a>
-</p>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Due Date</th>
-            <th>Max Points</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.Title)</td>
-                <td>@item.DueDate.ToShortDateString()</td>
-                <td>@Html.DisplayFor(modelItem => item.MaxPoints)</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white pt-4 px-4 pb-2 d-flex justify-content-between align-items-center border-bottom-0">
+        <h5 class="fw-bold m-0 text-dark">
+            <i class="bi bi-journal-text text-primary"></i> Evaluation Units
+        </h5>
+        <a asp-action="Create" asp-route-courseId="@course?.Id" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-circle"></i> Create New Assignment
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Assignment Title</th>
+                        <th>Target Deadline</th>
+                        <th>Weight Context</th>
+                        <th class="pe-4 text-end">Task Interface Controls</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="fw-bold text-dark text-decoration-none">
+                                    @item.Title
+                                </a>
+                            </td>
+                            <td class="text-muted small">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                @item.DueDate.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                            </td>
+                            <td>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 rounded-pill px-2.5">
+                                    @item.MaxPoints Pts Max
+                                </span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <div class="btn-group" role="group">
+                                    <a asp-controller="Grades" asp-action="Index" asp-route-assignmentId="@item.Id" class="btn btn-sm btn-outline-primary rounded-3 me-1">
+                                        <i class="bi bi-clipboard-check"></i> Submissions
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light text-warning rounded-3 me-1" title="Edit Parameters">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-light text-danger rounded-3" title="Drop Evaluation">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder-x display-6 d-block mb-2"></i>
+                                No assignments have been provisioned for this course module yet.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

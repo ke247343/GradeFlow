@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Enroll Student";
+    var course = ViewBag.Course as GradeFlow.Models.Course;
+    var students = ViewBag.Students as SelectList;
+}
+
+<h2>Enroll Student in @course?.Title (@course?.Code)</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        @if (ViewBag.NoStudents == true)
+        {
+            <div class="alert alert-warning">No students available to enroll. Please ensure you have registered users with the "Student" role.</div>
+            <a asp-action="Details" asp-route-id="@course?.Id" class="btn btn-secondary">Back to Course</a>
+        }
+        else
+        {
+            <form asp-action="Enroll" method="post">
+                <input type="hidden" name="id" value="@course?.Id" />
+                <div class="form-group mb-3">
+                    <label class="form-label fw-semibold">Select Student</label>
+                    <select name="studentId" class="form-select" asp-items="@students">
+                        <option value="">-- Select Student --</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Enroll</button>
+                    <a asp-action="Details" asp-route-id="@course?.Id" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        }
+    </div>
+</div>

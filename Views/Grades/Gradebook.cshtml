@@ -1,0 +1,67 @@
+@using Microsoft.AspNetCore.Identity
+@model IEnumerable<IdentityUser>
+@{
+    ViewData["Title"] = "Gradebook Ledger";
+    var course = ViewBag.Course as GradeFlow.Models.Course;
+    var finalGrades = ViewBag.FinalGrades as Dictionary<string, (double Cat1Avg, double Cat2Avg, double ProjAvg, double ExamAvg, double FinalMark)>;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="Courses" asp-action="Details" asp-route-id="@course?.Id" class="btn btn-sm btn-outline-secondary rounded-circle p-2 border-0">
+            <i class="bi bi-arrow-left fs-5 leading-none"></i>
+        </a>
+        <div>
+            <small class="text-muted text-uppercase tracking-wider fw-bold">Course Analytics</small>
+            <h2 class="fw-bold m-0 text-dark">Weighted Gradebook Ledger</h2>
+        </div>
+    </div>
+
+    <a asp-action="ExportGradebook" asp-route-courseId="@course?.Id" class="btn btn-success rounded-pill px-4 shadow-sm">
+        <i class="bi bi-file-earmark-spreadsheet"></i> Export to CSV Excel
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4 text-start">Student Profile Email</th>
+                        <th>CAT1 <span class="d-block text-muted small">(20%)</span></th>
+                        <th>CAT2 <span class="d-block text-muted small">(20%)</span></th>
+                        <th>Projects <span class="d-block text-muted small">(20%)</span></th>
+                        <th>Exams <span class="d-block text-muted small">(40%)</span></th>
+                        <th class="pe-4 text-end text-primary">Final Aggregation Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        // FIXED CS0170: Instantiate an explicit structural default tuple allocation block
+                        // to guarantee definite assignment parameters to the compiler in all branches
+                        var report = (Cat1Avg: 0.0, Cat2Avg: 0.0, ProjAvg: 0.0, ExamAvg: 0.0, FinalMark: 0.0);
+                        bool hasPerformanceValues = finalGrades != null && finalGrades.ContainsKey(user.Id);
+
+                        if (hasPerformanceValues && finalGrades != null)
+                        {
+                            report = finalGrades[user.Id];
+                        }
+
+                        <tr>
+                            <td class="ps-4 text-start fw-bold text-dark">@user.Email</td>
+                            <td>@(hasPerformanceValues ? report.Cat1Avg.ToString("0.0") + "%" : "---")</td>
+                            <td>@(hasPerformanceValues ? report.Cat2Avg.ToString("0.0") + "%" : "---")</td>
+                            <td>@(hasPerformanceValues ? report.ProjAvg.ToString("0.0") + "%" : "---")</td>
+                            <td>@(hasPerformanceValues ? report.ExamAvg.ToString("0.0") + "%" : "---")</td>
+                            <td class="pe-4 text-end text-primary fw-bold fs-6">
+                                @(hasPerformanceValues ? report.FinalMark.ToString("0.0") + "%" : "0.0%")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

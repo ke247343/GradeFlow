@@ -1,69 +1,79 @@
 @model IEnumerable<GradeFlow.Models.Course>
 
 @{
-    ViewData["Title"] = "Courses";
+    ViewData["Title"] = "My Courses";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">
-        <i class="bi bi-book-half text-primary"></i> My Courses
-    </h2>
-    <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
-        <i class="bi bi-plus-circle"></i> Create New Course
-    </a>
+    <div>
+        <h2 class="fw-bold mb-1">
+            <i class="bi bi-person-workspace text-primary"></i> Instructor Dashboard
+        </h2>
+        <p class="text-muted mb-0">Manage your active classes, assignments, and student evaluations.</p>
+    </div>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-circle"></i> Create New Course
+        </a>
+    }
 </div>
 
-<div class="card shadow-sm border-0 rounded-4">
-    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-        <ul class="nav nav-tabs card-header-tabs">
-            <li class="nav-item">
-                <a class="nav-link active" href="#">All Courses</a>
-            </li>
-        </ul>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-4">Title</th>
-                        <th>Code</th>
-                        <th>Instructor</th>
-                        <th>Term</th>
-                        <th class="pe-4 text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="ps-4 fw-semibold">@Html.DisplayFor(modelItem => item.Title)</td>
-                            <td><span class="badge bg-secondary bg-opacity-10 text-dark">@Html.DisplayFor(modelItem => item.Code)</span></td>
-                            <td>@item.Instructor?.Email</td>
-                            <td>@Html.DisplayFor(modelItem => item.Term)</td>
-                            <td class="pe-4 text-end">
-                                <div class="btn-group" role="group">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-3 me-1">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </a>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-3 me-1">
-                                        <i class="bi bi-info-circle"></i> Details
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger rounded-3 me-1">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </a>
-                                    <a asp-controller="Assignments" asp-action="Index" asp-route-courseId="@item.Id" class="btn btn-sm btn-outline-success rounded-3">
-                                        <i class="bi bi-file-text"></i> Assignments
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    @foreach (var item in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 rounded-4 transition-hover">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill">
+                            @item.Code
+                        </span>
+                        <small class="text-muted fw-medium">
+                            <i class="bi bi-calendar3"></i> @item.Term
+                        </small>
+                    </div>
+
+                    <h4 class="card-title fw-bold text-dark mb-2">@item.Title</h4>
+
+                    <p class="text-muted small mb-4">
+                        <i class="bi bi-person-badge"></i> Instructor: @(item.Instructor?.Email ?? "Unassigned")
+                    </p>
+
+                    <!-- Fast Action Hub for Instructors -->
+                    <div class="mt-auto pt-3 border-top d-flex gap-2 justify-content-between">
+                        <div class="d-flex gap-1">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-3" title="Course Workspace">
+                                <i class="bi bi-folder2-open"></i> Workspace
+                            </a>
+                            <a asp-controller="Assignments" asp-action="Index" asp-route-courseId="@item.Id" class="btn btn-sm btn-outline-success rounded-3">
+                                <i class="bi bi-file-text"></i> Assignments
+                            </a>
+                        </div>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="btn-group">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light rounded-3 text-warning me-1">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-light rounded-3 text-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="card-footer bg-white border-top-0 text-muted small pb-3 pt-2 ps-4">
-        <i class="bi bi-info-circle-fill"></i> Showing @Model.Count() course(s)
-    </div>
+    }
 </div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm border mt-4">
+        <i class="bi bi-journal-x text-muted display-1"></i>
+        <h4 class="mt-3 fw-bold">No Courses Found</h4>
+        <p class="text-muted">You are not currently assigned to teach or manage any courses this term.</p>
+    </div>
+}

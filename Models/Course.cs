@@ -8,7 +8,7 @@ namespace GradeFlow.Models
         public int Id { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(200)]
         public string Title { get; set; } = string.Empty;
 
         [Required]
@@ -16,15 +16,16 @@ namespace GradeFlow.Models
         public string Code { get; set; } = string.Empty;
 
         [Required]
-        public string InstructorId { get; set; } = string.Empty;
-
-        public IdentityUser? Instructor { get; set; }
-
-        [Required]
-        [StringLength(30)]
+        [StringLength(50)]
         public string Term { get; set; } = string.Empty;
+
+        public string InstructorId { get; set; } = string.Empty;
+        public IdentityUser? Instructor { get; set; }
 
         public ICollection<Enrollment>? Enrollments { get; set; }
         public ICollection<Assignment>? Assignments { get; set; }
+
+        // SOFT DELETE INTERCEPTOR FLAG
+        public DateTime? DeletedAt { get; set; }
     }
 }

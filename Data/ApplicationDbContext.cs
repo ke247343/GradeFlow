@@ -9,10 +9,13 @@ namespace GradeFlow.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options){}
+
         public DbSet<Course> Courses { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<Submission> Submissions { get; set; }
+        public DbSet<Announcement> Announcements { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -43,6 +46,16 @@ namespace GradeFlow.Data
                 .HasOne(s => s.Assignment)
                 .WithMany(a => a.Submissions)
                 .HasForeignKey(s => s.AssignmentId);
+
+            builder.Entity<Announcement>()
+                .HasOne(a => a.Course)
+                .WithMany()
+                .HasForeignKey(a => a.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // SOFT DELETE GLOBAL AUTOMATED INTERCEPTION FILTER ENGINE
+            builder.Entity<Course>().HasQueryFilter(c => c.DeletedAt == null);
+            builder.Entity<Assignment>().HasQueryFilter(a => a.DeletedAt == null);
         }
     }
 }

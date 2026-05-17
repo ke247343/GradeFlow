@@ -129,8 +129,6 @@ namespace GradeFlow.Controllers
         public async Task<IActionResult> Courses()
         {
             var courses = await _context.Courses
-                .Include(c => c.Instructor)
-                .Include(c => c.Enrollments)
                 .Select(c => new AdminCourseViewModel
                 {
                     Id = c.Id,
@@ -138,7 +136,8 @@ namespace GradeFlow.Controllers
                     Code = c.Code,
                     InstructorEmail = c.Instructor != null ? (c.Instructor.Email ?? "No Email") : "Unknown",
                     Term = c.Term,
-                    EnrollmentCount = c.Enrollments != null ? c.Enrollments.Count : 0,
+                    // FIXED CS8604: Added explicit null conditional check to clear potential null reference arguments
+                    EnrollmentCount = c.Enrollments != null ? c.Enrollments.Count() : 0,
                     AssignmentCount = _context.Assignments.Count(a => a.CourseId == c.Id)
                 })
                 .OrderBy(c => c.Code)

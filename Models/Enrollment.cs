@@ -9,5 +9,6 @@ namespace GradeFlow.Models
         public Course? Course { get; set; }
         public string StudentId { get; set; } = string.Empty;
         public IdentityUser? Student { get; set; }
+        public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;  // Added timestamp
     }
 }

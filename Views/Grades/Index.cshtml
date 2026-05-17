@@ -1,40 +1,140 @@
 @model IEnumerable<GradeFlow.Models.Submission>
 @{
-    ViewData["Title"] = "Submissions";
+    ViewData["Title"] = "Evaluation Queue";
     var assignment = ViewBag.Assignment as GradeFlow.Models.Assignment;
+    double avg = ViewBag.ClassAverage;
+    int high = ViewBag.HighScore;
+    int low = ViewBag.LowScore;
+    int gradedCount = ViewBag.GradedCount;
 }
 
-<h2>Submissions for @assignment?.Title</h2>
-<p><strong>Course:</strong> @assignment?.Course?.Title (@assignment?.Course?.Code)</p>
-<p><strong>Max Points:</strong> @assignment?.MaxPoints</p>
+<div class="d-flex align-items-center gap-2 mb-4">
+    <a asp-controller="Courses" asp-action="Details" asp-route-id="@assignment?.CourseId" class="btn btn-sm btn-outline-secondary rounded-circle p-2 border-0">
+        <i class="bi bi-arrow-left fs-5 leading-none"></i>
+    </a>
+    <div>
+        <small class="text-muted text-uppercase tracking-wider fw-bold">Submissions Ledger</small>
+        <h2 class="fw-bold m-0 text-dark">Evaluations for "@assignment?.Title"</h2>
+    </div>
+</div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Student</th>
-            <th>Submitted At</th>
-            <th>Late</th>
-            <th>Grade</th>
-            <th>Feedback</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var sub in Model)
-        {
-            <tr>
-                <td>@sub.Student?.Email</td>
-                <td>@sub.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                <td>@(sub.IsLate ? "Yes" : "No")</td>
-                <td>@(sub.Grade.HasValue ? sub.Grade.ToString() : "Not graded")</td>
-                <td>@(sub.Feedback ?? "")</td>
-                <td>
-                    <a asp-action="Grade" asp-route-id="@sub.Id" class="btn btn-sm btn-primary">Grade</a>
-                    <a href="@sub.FilePath" target="_blank" class="btn btn-sm btn-secondary">Download</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- RECOMMENDATION 2 UI: Analytics Metrics Header Ribbon -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-white text-center p-3">
+            <small class="text-muted d-block mb-1"><i class="bi bi-graph-up text-primary"></i> Class Average</small>
+            <h3 class="fw-bold text-dark m-0">@avg.ToString("0.0") <span class="fs-6 text-muted">/ @assignment?.MaxPoints</span></h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-white text-center p-3">
+            <small class="text-muted d-block mb-1"><i class="bi bi-trophy text-success"></i> High Score</small>
+            <h3 class="fw-bold text-success m-0">@high <span class="fs-6 text-muted">pts</span></h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-white text-center p-3">
+            <small class="text-muted d-block mb-1"><i class="bi bi-arrow-down-circle text-danger"></i> Low Score</small>
+            <h3 class="fw-bold text-danger m-0">@low <span class="fs-6 text-muted">pts</span></h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-white text-center p-3">
+            <small class="text-muted d-block mb-1"><i class="bi bi-pie-chart text-info"></i> Evaluation Progress</small>
+            <h3 class="fw-bold text-dark m-0">@gradedCount <span class="fs-6 text-muted">/ @Model.Count() graded</span></h3>
+        </div>
+    </div>
+</div>
 
-<a asp-action="Details" asp-controller="Assignments" asp-route-id="@assignment?.Id" class="btn btn-secondary">Back to Assignment</a>
+<!-- Submissions Roster -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Student Profile Email</th>
+                        <th>Uploaded Timestamp</th>
+                        <th>Submission Timing</th>
+                        <th>Assigned Score</th>
+                        <th>Instructor Feedback Summary</th>
+                        <th class="pe-4 text-end">Action Panel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sub in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">@sub.Student?.Email</td>
+                            <td class="text-muted font-monospace small">
+                                @sub.SubmittedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                            </td>
+                            <td>
+                                @if (sub.IsLate)
+                                {
+                                    // RECOMMENDATION 3 UI: Compute explicit late duration metadata breakdown
+                                    string durationText = "Late";
+                                    if (assignment != null)
+                                    {
+                                        var delay = sub.SubmittedAt - assignment.DueDate;
+                                        if (delay.TotalDays >= 1)
+                                            durationText = $"{(int)delay.TotalDays}d {delay.Hours}h Late";
+                                        else if (delay.TotalHours >= 1)
+                                            durationText = $"{delay.Hours}h {delay.Minutes}m Late";
+                                        else
+                                            durationText = $"{delay.Minutes}m Late";
+                                    }
+                                    <span class="badge bg-danger bg-opacity-10 text-danger fw-semibold px-2.5" title="Exceeded target deadline parameters">
+                                        <i class="bi bi-exclamation-circle-fill"></i> @durationText
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2.5">
+                                        <i class="bi bi-check-circle-fill"></i> On Time
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (sub.Grade.HasValue)
+                                {
+                                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 fs-7">
+                                        @sub.Grade.Value <span class="opacity-75 font-normal">/ @assignment?.MaxPoints</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20 fw-bold px-3 py-1.5 fs-7">
+                                        Pending Review
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-truncate text-muted" style="max-width: 200px;">
+                                @(string.IsNullOrEmpty(sub.Feedback) ? "---" : sub.Feedback)
+                            </td>
+                            <td class="pe-4 text-end">
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Grade" asp-route-id="@sub.Id" class="btn btn-sm @(sub.Grade.HasValue ? "btn-outline-primary" : "btn-primary shadow-sm") rounded-3 px-3 me-1">
+                                        <i class="bi bi-pencil-square"></i> @(sub.Grade.HasValue ? "Re-grade" : "Evaluate")
+                                    </a>
+                                    <a href="@sub.FilePath" target="_blank" class="btn btn-sm btn-light border rounded-3 text-secondary" title="Download Document payload">
+                                        <i class="bi bi-cloud-arrow-down-fill"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox display-6 d-block mb-2 text-secondary"></i>
+                                No student submissions have been logged for this assignment yet.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
